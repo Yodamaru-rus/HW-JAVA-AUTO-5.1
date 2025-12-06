@@ -21,19 +21,25 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CardTest {
 
+    private String firstMeetingDate;
+    private String secondMeetingDate;
+
     @BeforeEach
     void setup() {
         open("http://localhost:9999");
     }
 
+    @BeforeEach
+    void setUpDates() {
+        firstMeetingDate = Generate.generateDate(4);
+        secondMeetingDate = Generate.generateDate(7);
+    }
+
+
     @Test
     @DisplayName("Should successful plan and replan meeting")
     void shouldSuccessfulPlanAndReplanMeeting() {
         var validUser = Generate.Registration.generateUser("ru");
-        var daysToAddForFirstMeeting = 4;
-        var firstMeetingDate = Generate.generateDate(daysToAddForFirstMeeting);
-        var daysToAddForSecondMeeting = 7;
-        var secondMeetingDate = Generate.generateDate(daysToAddForSecondMeeting);
         $("[data-test-id='city'] input").setValue(validUser.getCity());
         $("[data-test-id='date'] input")
                 .press(Keys.chord(Keys.SHIFT, Keys.HOME), Keys.DELETE)
@@ -43,161 +49,130 @@ public class CardTest {
         $("[data-test-id='agreement'] span").click();
         $$("button").find(text("Запланировать")).click();
         $(Selectors.withText("Успешно!")).should(Condition.visible);
-        $("[data-test-id='success-notification'] .notification__content").should(Condition.text("Встреча успешно забронирована на " + firstMeetingDate)).should(Condition.visible);
-    }
-/*
-    @Test
-    void firstPositiveTest() {
-        String planDate = generateDate(4, "dd.MM.yyyy");
-        open("http://localhost:9999");
-        $("[data-test-id='city'] input").setValue("Москва");
+        $("[data-test-id='success-notification'] .notification__content").should(Condition.text("Встреча успешно запланирована на " + firstMeetingDate)).should(Condition.visible);
         $("[data-test-id='date'] input")
                 .press(Keys.chord(Keys.SHIFT, Keys.HOME), Keys.DELETE)
-                .setValue(planDate);
-        $("[data-test-id='name'] input").setValue("Иванов Иван");
-        $("[data-test-id='phone'] input").setValue("+79111111111");
-        $("[data-test-id='agreement'] span").click();
-        $$("button").find(text("Забронировать")).click();
-        $(Selectors.withText("Успешно!")).should(Condition.visible, Duration.ofSeconds(15));
-        $("[data-test-id='notification'] .notification__content").should(Condition.text("Встреча успешно забронирована на " + planDate)).should(Condition.visible);
+                .setValue(secondMeetingDate);
+        $$("button").find(text("Запланировать")).click();
+        $("[data-test-id='replan-notification'] button").should(Condition.visible).click();
+        $("[data-test-id='success-notification'] .notification__content").should(Condition.text("Встреча успешно запланирована на " + secondMeetingDate)).should(Condition.visible);
     }
 
     @Test
+    @DisplayName("Negative City Test")
     void negativeCityTest() {
-        String planDate = generateDate(4, "dd.MM.yyyy");
-        open("http://localhost:9999");
+        var validUser = Generate.Registration.generateUser("ru");
         $("[data-test-id='date'] input")
                 .press(Keys.chord(Keys.SHIFT, Keys.HOME), Keys.DELETE)
-                .setValue(planDate);
-        $("[data-test-id='name'] input").setValue("Иванов Иван");
-        $("[data-test-id='phone'] input").setValue("+79111111111");
+                .setValue(firstMeetingDate);
+        $("[data-test-id='name'] input").setValue(validUser.getName());
+        $("[data-test-id='phone'] input").setValue(validUser.getPhone());
         $("[data-test-id='agreement'] span").click();
-        $$("button").find(text("Забронировать")).click();
+        $$("button").find(text("Запланировать")).click();
         $("[data-test-id='city'] .input__sub").should(Condition.text("Поле обязательно для заполнения")).should(Condition.visible);
+
+
     }
 
     @Test
+    @DisplayName("Negative City Test with undefined city")
     void negativeCityTest2() {
-        String planDate = generateDate(4, "dd.MM.yyyy");
-        open("http://localhost:9999");
-        $("[data-test-id='city'] input").setValue("Москваaaaa");
+        var validUser = Generate.Registration.generateUser("ru");
+        $("[data-test-id='city'] input").setValue(validUser.getCity() + "aaaaa");
         $("[data-test-id='date'] input")
                 .press(Keys.chord(Keys.SHIFT, Keys.HOME), Keys.DELETE)
-                .setValue(planDate);
-        $("[data-test-id='name'] input").setValue("Иванов Иван");
-        $("[data-test-id='phone'] input").setValue("+79111111111");
+                .setValue(firstMeetingDate);
+        $("[data-test-id='name'] input").setValue(validUser.getName());
+        $("[data-test-id='phone'] input").setValue(validUser.getPhone());
         $("[data-test-id='agreement'] span").click();
-        $$("button").find(text("Забронировать")).click();
+        $$("button").find(text("Запланировать")).click();
         $("[data-test-id='city'] .input__sub").should(Condition.text("Доставка в выбранный город недоступна")).should(Condition.visible);
     }
 
     @Test
+    @DisplayName("Negative Date Test")
     void negativeDateTest() {
-        open("http://localhost:9999");
-        $("[data-test-id='city'] input").setValue("Москва");
+        var validUser = Generate.Registration.generateUser("ru");
+        $("[data-test-id='city'] input").setValue(validUser.getCity());
         $("[data-test-id='date'] input")
                 .press(Keys.chord(Keys.SHIFT, Keys.HOME), Keys.DELETE);
-        $("[data-test-id='name'] input").setValue("Иванов Иван");
-        $("[data-test-id='phone'] input").setValue("+79111111111");
+        $("[data-test-id='name'] input").setValue(validUser.getName());
+        $("[data-test-id='phone'] input").setValue(validUser.getPhone());
         $("[data-test-id='agreement'] span").click();
-        $$("button").find(text("Забронировать")).click();
+        $$("button").find(text("Запланировать")).click();
         $("[data-test-id='date'] .input__inner .input__sub").should(Condition.text("Неверно введена дата")).should(Condition.visible);
     }
 
     @Test
+    @DisplayName("Negative Name Test")
     void negativeNameTest() {
-        String planDate = generateDate(4, "dd.MM.yyyy");
-        open("http://localhost:9999");
-        $("[data-test-id='city'] input").setValue("Москва");
+        var validUser = Generate.Registration.generateUser("ru");
+        $("[data-test-id='city'] input").setValue(validUser.getCity());
         $("[data-test-id='date'] input")
                 .press(Keys.chord(Keys.SHIFT, Keys.HOME), Keys.DELETE)
-                .setValue(planDate);
-        $("[data-test-id='phone'] input").setValue("+79111111111");
+                .setValue(firstMeetingDate);
+        $("[data-test-id='phone'] input").setValue(validUser.getPhone());
         $("[data-test-id='agreement'] span").click();
-        $$("button").find(text("Забронировать")).click();
+        $$("button").find(text("Запланировать")).click();
         $("[data-test-id='name'] .input__sub").should(Condition.text("Поле обязательно для заполнения")).should(Condition.visible);
-
     }
 
+
     @Test
+    @DisplayName("Negative Name Test for another language")
     void negativeNameTest2() {
-        String planDate = generateDate(4, "dd.MM.yyyy");
-        open("http://localhost:9999");
-        $("[data-test-id='city'] input").setValue("Москва");
+        var validUser = Generate.Registration.generateUser("ru");
+        $("[data-test-id='city'] input").setValue(validUser.getCity());
         $("[data-test-id='date'] input")
                 .press(Keys.chord(Keys.SHIFT, Keys.HOME), Keys.DELETE)
-                .setValue(planDate);
+                .setValue(firstMeetingDate);
         $("[data-test-id='name'] input").setValue("Ivanov Ivan");
-        $("[data-test-id='phone'] input").setValue("+79111111111");
+        $("[data-test-id='phone'] input").setValue(validUser.getPhone());
         $("[data-test-id='agreement'] span").click();
-        $$("button").find(text("Забронировать")).click();
+        $$("button").find(text("Запланировать")).click();
         $("[data-test-id='name'] .input__sub").should(Condition.text("Имя и Фамилия указаные неверно. Допустимы только русские буквы, пробелы и дефисы.")).should(Condition.visible);
-
     }
 
     @Test
+    @DisplayName("Negative Phone Test")
     void negativePhoneTest() {
-        String planDate = generateDate(4, "dd.MM.yyyy");
-        open("http://localhost:9999");
-        $("[data-test-id='city'] input").setValue("Москва");
+        var validUser = Generate.Registration.generateUser("ru");
+        $("[data-test-id='city'] input").setValue(validUser.getCity());
         $("[data-test-id='date'] input")
                 .press(Keys.chord(Keys.SHIFT, Keys.HOME), Keys.DELETE)
-                .setValue(planDate);
-        $("[data-test-id='name'] input").setValue("М М---М");
+                .setValue(firstMeetingDate);
+        $("[data-test-id='name'] input").setValue(validUser.getName());
         $("[data-test-id='agreement'] span").click();
-        $$("button").find(text("Забронировать")).click();
+        $$("button").find(text("Запланировать")).click();
         $("[data-test-id='phone'] .input__sub").should(Condition.text("Поле обязательно для заполнения")).should(Condition.visible);
-
     }
 
     @Test
+    @DisplayName("Negative Phone Test, only '+'")
     void negativePhoneTest2() {
-        String planDate = generateDate(4, "dd.MM.yyyy");
-        open("http://localhost:9999");
-        $("[data-test-id='city'] input").setValue("Москва");
+        var validUser = Generate.Registration.generateUser("ru");
+        $("[data-test-id='city'] input").setValue(validUser.getCity());
         $("[data-test-id='date'] input")
                 .press(Keys.chord(Keys.SHIFT, Keys.HOME), Keys.DELETE)
-                .setValue(planDate);
-        $("[data-test-id='name'] input").setValue("М ---М");
-        $("[data-test-id='phone'] input").setValue("79111+111111");
+                .setValue(firstMeetingDate);
+        $("[data-test-id='name'] input").setValue(validUser.getName());
+        $("[data-test-id='phone'] input").setValue("+");
         $("[data-test-id='agreement'] span").click();
-        $$("button").find(text("Забронировать")).click();
-        $("[data-test-id='phone'] .input__sub").should(Condition.text("Телефон указан неверно. Должно быть 11 цифр, например, +79012345678.")).should(Condition.visible);
+        $$("button").find(text("Запланировать")).click();
+        $("[data-test-id='phone'] .input__sub").should(Condition.text("Поле обязательно для заполнения")).should(Condition.visible);
     }
 
     @Test
+    @DisplayName("Should successful plan and replan meeting")
     void negativeCheckTest() {
-        String planDate = generateDate(4, "dd.MM.yyyy");
-        open("http://localhost:9999");
-        $("[data-test-id='city'] input").setValue("Москва");
+        var validUser = Generate.Registration.generateUser("ru");
+        $("[data-test-id='city'] input").setValue(validUser.getCity());
         $("[data-test-id='date'] input")
                 .press(Keys.chord(Keys.SHIFT, Keys.HOME), Keys.DELETE)
-                .setValue(planDate);
-        $("[data-test-id='name'] input").setValue("М ---М");
-        $("[data-test-id='phone'] input").setValue("+79111111111");
-        $$("button").find(text("Забронировать")).click();
+                .setValue(firstMeetingDate);
+        $("[data-test-id='name'] input").setValue(validUser.getName());
+        $("[data-test-id='phone'] input").setValue(validUser.getPhone());
+        $$("button").find(text("Запланировать")).click();
         $(".input_invalid").should(Condition.visible);
     }
-
-    @Test
-    void firstPositiveTestForElements() {
-        int days = 30;
-        String planDate = generateDate(days, "d");
-        open("http://localhost:9999");
-        $("[data-test-id='city'] input").setValue("Каз");
-        $$(".menu-item__control").findBy(text("Владикавказ")).click();
-        $("[data-test-id='date'] input").click();
-        if (!(generateDate(3, "MM") == generateDate(days, "MM"))) {
-            $(".calendar__title>[data-step='1']").click();
-        }
-        $$("tbody td").findBy(text(planDate)).click();
-        $("[data-test-id='name'] input").setValue("Иванов Иван");
-        $("[data-test-id='phone'] input").setValue("+79111111111");
-        $("[data-test-id='agreement'] span").click();
-        $$("button").find(text("Забронировать")).click();
-        $(Selectors.withText("Успешно!")).should(Condition.visible, Duration.ofSeconds(15));
-        $("[data-test-id='notification'] .notification__content").should(Condition.text("Встреча успешно забронирована на " + generateDate(days, "dd.MM.yyyy"))).should(Condition.visible);
-    }
-
- */
 }
