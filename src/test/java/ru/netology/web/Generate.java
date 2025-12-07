@@ -2,7 +2,6 @@ package ru.netology.web;
 
 import com.github.javafaker.Faker;
 import lombok.Value;
-import lombok.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -43,6 +42,10 @@ public class Generate {
         return phone;
     }
 
+    public static String generatePhone10Digits(Faker faker) {
+        return faker.numerify("9#######");
+    }
+
     public static class Registration {
         private static Faker faker;
 
@@ -55,6 +58,16 @@ public class Generate {
                     generateCity(),
                     generateName(faker),
                     generatePhone(faker)
+            );
+
+        }
+
+        public static UserInfo generateUserError(String locale) {
+            faker = new Faker(new Locale(locale));
+            return new UserInfo(
+                    generateCity(),
+                    generateName(faker),
+                    generatePhone10Digits(faker)
             );
 
         }

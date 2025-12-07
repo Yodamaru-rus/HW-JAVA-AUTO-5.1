@@ -121,12 +121,12 @@ public class CardTest {
     @Test
     @DisplayName("Negative Name Test for another language")
     void negativeNameTest2() {
-        var validUser = Generate.Registration.generateUser("ru");
+        var validUser = Generate.Registration.generateUser("en");
         $("[data-test-id='city'] input").setValue(validUser.getCity());
         $("[data-test-id='date'] input")
                 .press(Keys.chord(Keys.SHIFT, Keys.HOME), Keys.DELETE)
                 .setValue(firstMeetingDate);
-        $("[data-test-id='name'] input").setValue("Ivanov Ivan");
+        $("[data-test-id='name'] input").setValue(validUser.getName());
         $("[data-test-id='phone'] input").setValue(validUser.getPhone());
         $("[data-test-id='agreement'] span").click();
         $$("button").find(text("Запланировать")).click();
@@ -150,16 +150,16 @@ public class CardTest {
     @Test
     @DisplayName("Negative Phone Test, only '+'")
     void negativePhoneTest2() {
-        var validUser = Generate.Registration.generateUser("ru");
-        $("[data-test-id='city'] input").setValue(validUser.getCity());
+        var invalidUser = Generate.Registration.generateUserError("ru");
+        $("[data-test-id='city'] input").setValue(invalidUser.getCity());
         $("[data-test-id='date'] input")
                 .press(Keys.chord(Keys.SHIFT, Keys.HOME), Keys.DELETE)
                 .setValue(firstMeetingDate);
-        $("[data-test-id='name'] input").setValue(validUser.getName());
-        $("[data-test-id='phone'] input").setValue("+");
+        $("[data-test-id='name'] input").setValue(invalidUser.getName());
+        $("[data-test-id='phone'] input").setValue(invalidUser.getPhone());
         $("[data-test-id='agreement'] span").click();
         $$("button").find(text("Запланировать")).click();
-        $("[data-test-id='phone'] .input__sub").should(Condition.text("Поле обязательно для заполнения")).should(Condition.visible);
+        $("[data-test-id='phone'] .input__sub").should(Condition.text("Телефон указан неверно. Должно быть 11 цифр, например, +79012345678.")).should(Condition.visible);
     }
 
     @Test
